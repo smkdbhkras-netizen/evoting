@@ -3,6 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
+<link rel="icon" id="fav" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗳️%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
 <style>
 :root{--g:#0f5132;--g2:#198754;--gold:#c9a227;--bg:#f3f6f1;--ink:#14261c;--mut:#5f7367;--card:#fff;--line:#dbe4dd}
@@ -94,10 +95,12 @@ header h1{letter-spacing:.3px}main{margin-top:-46px}
 @keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}@keyframes glow{50%{box-shadow:0 0 95px #c9a227}}
 .kg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;break-after:page;page-break-after:always}.kg:last-child{break-after:auto;page-break-after:auto}
 .kh{grid-column:1/-1;font-weight:800;font-size:16px;border-bottom:2px solid #000;padding-bottom:4px}
+.hd{display:flex;align-items:center;justify-content:center;gap:16px}.hd>div{text-align:left}#lg{height:68px;width:auto;max-width:96px;object-fit:contain}
+@media(max-width:480px){.hd{flex-direction:column;gap:8px}.hd>div{text-align:center}}
 </style>
 </head>
 <body>
-<header><small>SMK IT AL MUBAROK</small><h1 id="judul">E-Voting OSIS</h1><div style="margin-top:8px"><span id="st" class="badge tutup">Memuat...</span></div><div class="steps" id="steps"><span class="on">1 · Token</span><span>2 · Pilih</span><span>3 · Selesai</span></div></header>
+<header><div class="hd"><img id="lg" class="hide" alt="Logo"><div><small>SMK IT AL MUBAROK</small><h1 id="judul">E-Voting OSIS</h1></div></div><div style="margin-top:8px"><span id="st" class="badge tutup">Memuat...</span></div><div class="steps" id="steps"><span class="on">1 · Token</span><span>2 · Pilih</span><span>3 · Selesai</span></div></header>
 <main>
 
 <!-- LOGIN -->
@@ -188,6 +191,13 @@ header h1{letter-spacing:.3px}main{margin-top:-46px}
       <div class="row"><button onclick="ubah('BUKA')">Buka pemilihan</button><button class="r" onclick="ubah('TUTUP')">Tutup pemilihan</button></div>
     </div>
     <div class="card">
+      <h2>Logo sekolah</h2>
+      <p style="color:var(--mut);font-size:14px;margin:6px 0">Tampil di header dan sebagai ikon tab browser. Disarankan PNG dengan latar transparan.</p>
+      <img id="lgP" alt="" style="display:none;max-height:90px;width:auto;margin:8px 0">
+      <input type="file" id="lgF" accept="image/*">
+      <div class="row"><button onclick="simpanLogo()">Simpan logo</button><button class="o" onclick="hapusLogo()">Hapus logo</button></div>
+    </div>
+    <div class="card">
       <h2>Pengaturan</h2>
       <label>Judul pemilihan</label><input id="pj">
       <label>Password panitia baru (kosongkan jika tidak diganti)</label><input id="pp" type="password" placeholder="Minimal 6 karakter">
@@ -229,7 +239,7 @@ function show(id){['v-login','v-vote','v-done','v-alogin','v-admin'].forEach(v=>
   const n={'v-login':1,'v-vote':2,'v-done':3}[id];$('steps').style.display=n?'flex':'none';document.querySelectorAll('#steps span').forEach((e,i)=>e.classList.toggle('on',i+1<=n));}
 function setSt(s){const e=$('st');e.textContent=s==='BUKA'?'Pemilihan dibuka':'Pemilihan ditutup';e.className='badge '+(s==='BUKA'?'buka':'tutup');}
 
-api('getInit').then(d=>{$('judul').textContent=d.judul;JUDUL=d.judul;setSt(d.status);KD=d.kandidat;}).catch(e=>$('e1').textContent=e.message);
+api('getInit').then(d=>{$('judul').textContent=d.judul;JUDUL=d.judul;setSt(d.status);KD=d.kandidat;setLogo(d.logo);}).catch(e=>$('e1').textContent=e.message);
 
 async function masuk(){
   $('e1').textContent='';$('bMasuk').disabled=true;
@@ -258,7 +268,7 @@ async function kirim(){
 }
 
 function kembali(){clearInterval(CDT);TOKEN='';PICK=null;$('tk').value='';$('e1').textContent='';$('kd').innerHTML='';cf.classList.remove('on');show('v-login');scrollTo(0,0);$('tk').focus();
-  api('getInit').then(d=>{$('judul').textContent=d.judul;JUDUL=d.judul;setSt(d.status);KD=d.kandidat;}).catch(()=>{});}
+  api('getInit').then(d=>{$('judul').textContent=d.judul;JUDUL=d.judul;setSt(d.status);KD=d.kandidat;setLogo(d.logo);}).catch(()=>{});}
 
 /* ADMIN */
 async function adm(){
@@ -363,6 +373,16 @@ function confetti(){
     if(live||P.some(p=>p.y<c.height))CONF=requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height);})();
 }
 function tutupWin(){clearInterval(IV);cancelAnimationFrame(CONF);$('win').classList.remove('on');$('cv').getContext('2d').clearRect(0,0,9999,9999);}
+
+/* LOGO & FAVICON */
+const FAV0="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗳️%3C/text%3E%3C/svg%3E";let LOGOD='';
+function setLogo(u){const g=$('lg');if(u){g.src=u;g.classList.remove('hide');}else g.classList.add('hide');$('fav').href=u||FAV0;}
+$('lgF').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const z=Math.min(1,256/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*z);c.height=Math.round(im.height*z);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);LOGOD=c.toDataURL('image/png');$('lgP').src=LOGOD;$('lgP').style.display='block';};im.src=r.result;};r.readAsDataURL(f);});
+async function simpanLogo(){if(!LOGOD){alert('Pilih file logo dulu.');return;}
+  try{const u=await api('simpanLogo',PASS,LOGOD);setLogo(u);LOGOD='';$('lgF').value='';$('lgP').style.display='none';alert('Logo disimpan.');}catch(e){alert(e.message);}}
+async function hapusLogo(){if(!confirm('Hapus logo?'))return;try{await api('simpanLogo',PASS,'');setLogo('');LOGOD='';$('lgF').value='';$('lgP').style.display='none';}catch(e){alert(e.message);}}
 </script>
 </body>
 </html>
